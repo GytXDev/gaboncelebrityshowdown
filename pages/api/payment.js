@@ -1,5 +1,13 @@
 // pages/api/payment.js
 
+const PAYMENT_CLIENT_ID = "0d2ced90-5398-4f6f-a830-b72fe4caefd2";
+const PAYMENT_CLIENT_SECRET = "85a8209452c1d5fbeefd6006b8d1105608bf0d61ba7d8d86c211811b752422d0";
+const PAYMENT_WALLET = "661766093fbb7a1bd42da1b5";
+const PAYMENT_PORTFOLIO = "661766093fbb7a1bd42da1b5";
+const PAYMENT_DISBURSEMENT = "6617ce313fbb7a80ac2da1ff";
+const PAYMENT_GATEWAY_URL = "https://gateway.singpay.ga/v1/74/paiement";
+const PAYMENT_STATUS_URL = "https://gateway.singpay.ga/v1/transaction/api/status/";
+
 const MessageType = {
     InvalidPinLength: "Invalid PIN length",
     InsufficientBalance: "Solde insuffisant",
@@ -59,7 +67,7 @@ function mapStatusMessage(message) {
  * @returns {Promise<string>} Le message de statut final.
  */
 async function checkTransactionStatus(transactionId, headers) {
-    const statusUrl = `${process.env.PAYMENT_STATUS_URL}${transactionId}`;
+    const statusUrl = `${PAYMENT_STATUS_URL}${transactionId}`;
     const maxAttempts = 5;
     const delay = 2000; // 2 secondes
 
@@ -144,16 +152,16 @@ export default async function handler(req, res) {
             amount,
             reference,
             client_msisdn: phoneNumber,
-            portfolio: process.env.PAYMENT_PORTFOLIO,
-            disbursement: process.env.PAYMENT_DISBURSEMENT,
+            portfolio: PAYMENT_PORTFOLIO,
+            disbursement: PAYMENT_DISBURSEMENT,
             isTransfer: true,
         };
 
         const headers = {
             accept: "*/*",
-            "x-client-id": process.env.PAYMENT_CLIENT_ID,
-            "x-client-secret": process.env.PAYMENT_CLIENT_SECRET,
-            "x-wallet": process.env.PAYMENT_WALLET,
+            "x-client-id": PAYMENT_CLIENT_ID,
+            "x-client-secret": PAYMENT_CLIENT_SECRET,
+            "x-wallet": PAYMENT_WALLET,
             "Content-Type": "application/json",
         };
 
@@ -163,7 +171,7 @@ export default async function handler(req, res) {
 
         let paymentResponse;
         try {
-            paymentResponse = await fetch(process.env.PAYMENT_GATEWAY_URL, {
+            paymentResponse = await fetch(PAYMENT_GATEWAY_URL, {
                 method: "POST",
                 headers,
                 body: JSON.stringify(paymentData),
