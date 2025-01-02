@@ -1,5 +1,6 @@
 // pages/api/payment.js
 
+// Constantes globales pour les paiements
 const PAYMENT_CLIENT_ID = "0d2ced90-5398-4f6f-a830-b72fe4caefd2";
 const PAYMENT_CLIENT_SECRET = "85a8209452c1d5fbeefd6006b8d1105608bf0d61ba7d8d86c211811b752422d0";
 const PAYMENT_WALLET = "661766093fbb7a1bd42da1b5";
@@ -8,110 +9,10 @@ const PAYMENT_DISBURSEMENT = "6617ce313fbb7a80ac2da1ff";
 const PAYMENT_GATEWAY_URL = "https://gateway.singpay.ga/v1/74/paiement";
 const PAYMENT_STATUS_URL = "https://gateway.singpay.ga/v1/transaction/api/status/";
 
-const MessageType = {
-    InvalidPinLength: "Invalid PIN length",
-    InsufficientBalance: "Solde insuffisant",
-    IncorrectPin: "Incorrect PIN",
-    SuccessfulTransaction: "Transaction effectuée avec succès",
-    CancelledTransaction: "Transaction annulée avec succès",
-    UnableToGetTransactionStatus: "Impossible d'obtenir le statut de la transaction après plusieurs tentatives",
-    UnknownError: "Erreur inconnue",
-};
-
 /**
- * Génère une chaîne alphanumérique aléatoire.
- * @param {number} length - La longueur de la chaîne générée.
- * @returns {string} La chaîne alphanumérique générée.
- */
-function generateRandomString(length = 6) {
-    const characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-}
-
-/**
- * Mappe un message de statut reçu de l'API de paiement à un type défini.
- * @param {string} message - Le message de statut reçu.
- * @returns {string} Le type de message mappé.
- */
-function mapStatusMessage(message) {
-    const lowerMessage = message.toLowerCase();
-    console.log("Mapping status message:", lowerMessage); // Log pour débogage
-    if (lowerMessage.includes("invalid pin length")) {
-        return MessageType.InvalidPinLength;
-    } else if (lowerMessage.includes("solde insuffisant")) {
-        return MessageType.InsufficientBalance;
-    } else if (lowerMessage.includes("incorrect pin")) {
-        return MessageType.IncorrectPin;
-    } else if (
-        lowerMessage.includes("transaction a ete effectue avec succes") ||
-        lowerMessage.includes("your transaction has been successfully processed")
-    ) {
-        return MessageType.SuccessfulTransaction;
-    } else if (lowerMessage.includes("transaction a ete annulee avec succes")) {
-        return MessageType.CancelledTransaction;
-    } else if (lowerMessage.includes("impossible d'obtenir le statut de la transaction")) {
-        return MessageType.UnableToGetTransactionStatus;
-    } else {
-        return MessageType.UnknownError;
-    }
-}
-
-/**
- * Vérifie le statut de la transaction avec un maximum de tentatives.
- * @param {string} transactionId - L'ID de la transaction.
- * @param {object} headers - Les en-têtes à utiliser pour la requête.
- * @returns {Promise<string>} Le message de statut final.
- */
-async function checkTransactionStatus(transactionId, headers) {
-    const statusUrl = `${PAYMENT_STATUS_URL}${transactionId}`;
-    const maxAttempts = 5;
-    const delay = 2000; // 2 secondes
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-            console.log(`Tentative ${attempt + 1} de vérification du statut pour la transaction: ${transactionId}`);
-            const statusResponse = await fetch(statusUrl, {
-                method: "GET",
-                headers: headers,
-            });
-
-            if (!statusResponse.ok) {
-                const errorText = await statusResponse.text();
-                console.log(`Erreur lors de la vérification du statut: ${errorText}`);
-                return `Erreur lors de la vérification du statut : ${errorText}`;
-            }
-
-            const statusResult = await statusResponse.json();
-            if (statusResult.status && statusResult.status.message) {
-                const message = statusResult.status.message;
-                console.log(`Message de statut reçu: ${message}`);
-                if (isFinalStatus(message)) {
-                    console.log(`Statut final atteint: ${message}`);
-                    return message;
-                }
-            }
-
-            // Attendre avant la prochaine tentative
-            console.log(`Attente de ${delay / 1000} secondes avant la prochaine tentative`);
-            await new Promise((resolve) => setTimeout(resolve, delay));
-        } catch (error) {
-            console.log(`Erreur lors de la tentative ${attempt + 1}:`, error);
-            return "Erreur lors de la vérification du statut.";
-        }
-    }
-
-    console.log("Impossible d'obtenir le statut de la transaction après plusieurs tentatives.");
-    return "Impossible d'obtenir le statut de la transaction après plusieurs tentatives.";
-}
-
-/**
- * Détermine si le statut est final.
- * @param {string} message - Le message de statut.
- * @returns {boolean} Vrai si le statut est final, sinon faux.
+ * Vérifie si le statut reçu est final.
+ * @param {string} message - Message de statut.
+ * @returns {boolean} True si le statut est final.
  */
 function isFinalStatus(message) {
     const finalStatuses = [
@@ -119,35 +20,135 @@ function isFinalStatus(message) {
         "transaction a été effectuée avec succès",
         "votre transaction a été traitée avec succès",
         "transaction a été annulée avec succès",
-        "solde insuffisant", // Ajouté
-        "incorrect pin",     // Ajouté
+        "solde insuffisant",
+        "incorrect pin",
+        "the pin you have entered is incorrect", // Ajouté
+        "terminate", // Ajouté
     ];
     const lowerCaseMessage = message.toLowerCase();
-    const isFinal = finalStatuses.some((status) => lowerCaseMessage.includes(status.toLowerCase()));
-    return isFinal;
+    return finalStatuses.some((status) => lowerCaseMessage.includes(status));
 }
 
 /**
- * Gestionnaire de la route API de paiement.
- * @param {object} req - La requête HTTP.
- * @param {object} res - La réponse HTTP.
+ * Génère une chaîne alphanumérique aléatoire.
+ * @param {number} length - Longueur de la chaîne.
+ * @returns {string} Chaîne générée.
+ */
+function generateRandomString(length = 6) {
+    console.log(`Génération d'une chaîne aléatoire de longueur ${length}`);
+    const characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    console.log(`Chaîne générée : ${result}`);
+    return result;
+}
+
+/**
+ * Mappe un message de statut à un type prédéfini.
+ * @param {string} message - Message de statut.
+ * @returns {string} Type de message mappé.
+ */
+function mapStatusMessage(message) {
+    console.log(`Mapping du message de statut : ${message}`);
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes("invalid pin length")) {
+        return "Invalid PIN length";
+    } else if (lowerMessage.includes("solde insuffisant")) {
+        return "Solde insuffisant";
+    } else if (lowerMessage.includes("incorrect pin")) {
+        return "Incorrect PIN";
+    } else if (
+        lowerMessage.includes("transaction a ete effectue avec succes") ||
+        lowerMessage.includes("your transaction has been successfully processed")
+    ) {
+        return "Transaction effectuée avec succès";
+    } else if (lowerMessage.includes("transaction a ete annulee avec succes")) {
+        return "Transaction annulée avec succès";
+    } else if (lowerMessage.includes("impossible d'obtenir le statut de la transaction")) {
+        return "Impossible d'obtenir le statut de la transaction après plusieurs tentatives";
+    } else {
+        return "Erreur inconnue";
+    }
+}
+
+/**
+ * Vérifie le statut de la transaction via plusieurs tentatives.
+ * @param {string} transactionId - ID de la transaction.
+ * @param {object} headers - En-têtes pour la requête.
+ * @returns {Promise<string>} Message de statut final.
+ */
+async function checkTransactionStatus(transactionId, headers) {
+    console.log(`Début de la vérification du statut pour la transaction ${transactionId}`);
+    const statusUrl = `${PAYMENT_STATUS_URL}${transactionId}`;
+    const maxAttempts = 5;
+    const delay = 2000;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            console.log(`Tentative ${attempt + 1} sur ${maxAttempts}`);
+            const statusResponse = await fetch(statusUrl, { method: "GET", headers });
+            if (!statusResponse.ok) {
+                const errorText = await statusResponse.text();
+                console.log(`Erreur lors de la vérification : ${errorText}`);
+                return `Erreur : ${errorText}`;
+            }
+
+            const statusResult = await statusResponse.json();
+            console.log(`Réponse du statut :`, statusResult);
+
+            const message = statusResult.status?.message || "";
+            const transaction = statusResult.transaction || {};
+
+            // Vérification explicite pour "result" ou "status"
+            if (transaction.result === "PasswordError" || transaction.status === "Terminate") {
+                console.log(`Erreur critique détectée : ${transaction.result || transaction.status}`);
+                return message || "Erreur critique détectée.";
+            }
+
+            // Si un message est reçu et qu'il est final
+            if (isFinalStatus(message)) {
+                console.log(`Statut final confirmé : ${message}`);
+                return message;
+            }
+
+            console.log(`Attente avant nouvelle tentative...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        } catch (error) {
+            console.log(`Erreur lors de la tentative ${attempt + 1} :`, error);
+            return "Erreur lors de la vérification du statut.";
+        }
+    }
+
+    console.log("Statut non confirmé après plusieurs tentatives.");
+    return "Impossible d'obtenir le statut.";
+}
+
+/**
+ * Gestionnaire de la route API.
+ * @param {object} req - Requête HTTP.
+ * @param {object} res - Réponse HTTP.
  */
 export default async function handler(req, res) {
+    console.log("Requête reçue :", req.method, req.body);
+
     if (req.method !== "POST") {
-        console.log("Méthode non autorisée:", req.method);
+        console.log(`Méthode non autorisée : ${req.method}`);
         return res.status(405).json({ status_message: "Méthode non autorisée." });
     }
 
     try {
         const { phoneNumber, amount } = req.body;
 
-
         if (!phoneNumber || !amount) {
-            console.log("Paramètres manquants");
+            console.log("Paramètres requis manquants !");
             return res.status(400).json({ status_message: "Paramètres manquants." });
         }
 
-        const reference = generateRandomString(6);
+        const reference = generateRandomString();
+        console.log(`Données de paiement préparées avec référence : ${reference}`);
+
         const paymentData = {
             amount,
             reference,
@@ -165,51 +166,32 @@ export default async function handler(req, res) {
             "Content-Type": "application/json",
         };
 
-
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 40000); // 10 secondes
-
-        let paymentResponse;
-        try {
-            paymentResponse = await fetch(PAYMENT_GATEWAY_URL, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(paymentData),
-                signal: controller.signal,
-            });
-            clearTimeout(timeout);
-        } catch (error) {
-            if (error.name === "AbortError") {
-                console.log("La requête a expiré");
-                return res.status(504).json({ status_message: "Délai d'attente de la requête dépassé." });
-            }
-            console.log("Erreur lors de la requête de paiement:", error);
-            return res.status(500).json({ status_message: "Erreur lors de la requête de paiement." });
-        }
-
+        console.log("Envoi des données de paiement à l'API...");
+        const paymentResponse = await fetch(PAYMENT_GATEWAY_URL, { method: "POST", headers, body: JSON.stringify(paymentData) });
 
         if (!paymentResponse.ok) {
             const errorText = await paymentResponse.text();
-            console.log("Erreur lors du paiement:", errorText);
+            console.log("Erreur dans la réponse de paiement :", errorText);
             return res.status(paymentResponse.status).json({ status_message: mapStatusMessage(errorText) });
         }
 
         const paymentResult = await paymentResponse.json();
+        console.log("Résultat du paiement :", paymentResult);
 
         if (!paymentResult.transaction || !paymentResult.transaction.id) {
-            console.log("Réponse de paiement invalide");
-            return res.status(500).json({ status_message: "Réponse de paiement invalide." });
+            console.log("Transaction ID manquant dans la réponse.");
+            return res.status(500).json({ status_message: "Transaction invalide." });
         }
 
         const transactionId = paymentResult.transaction.id;
-
+        console.log(`Transaction ID obtenue : ${transactionId}`);
         const statusMessage = await checkTransactionStatus(transactionId, headers);
 
-        return res.status(200).json({
-            status_message: mapStatusMessage(statusMessage),
-        });
+        console.log("Statut final de la transaction :", statusMessage);
+        return res.status(200).json({ status_message: mapStatusMessage(statusMessage) });
+
     } catch (error) {
-        console.log("Erreur dans l'API de paiement :", error);
-        return res.status(500).json({ status_message: "Une erreur est survenue." });
+        console.log("Erreur dans le traitement de l'API :", error);
+        return res.status(500).json({ status_message: "Erreur interne." });
     }
 }

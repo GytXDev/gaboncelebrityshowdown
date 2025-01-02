@@ -111,7 +111,7 @@ export default function Modal({ participant, onClose, onVote }) {
         onClose();
       }
     } catch (error) {
-      console.error("Erreur lors du paiement :", error); // Log pour débogage
+      console.error("Erreur lors du paiement :", error);
       setSnackbar({
         open: true,
         message: `Erreur : ${error}`,
