@@ -1,0 +1,39 @@
+/* app/components/Introduction.module.css */
+
+.introduction {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f9f9f9; /* Fond légèrement gris */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .introduction h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .introduction p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  
+  .introduction ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+  
+  .introduction li {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  

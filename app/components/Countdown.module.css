@@ -1,0 +1,31 @@
+/* app/components/Countdown.module.css */
+.countdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px; /* Espacement réduit */
+  padding: 20px;
+  background-color: #ffffff; /* Fond blanc pour plus de clarté */
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px; /* Réduction de la largeur */
+  margin: 20px auto;
+}
+
+.timeSegment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeValue {
+  font-size: 2rem; /* Taille réduite */
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.timeLabel {
+  font-size: 1rem;
+  color: #555;
+  
+}

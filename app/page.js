@@ -1,101 +1,81 @@
-import Image from "next/image";
+// app/page.js
+'use client';
+
+import { useState } from 'react';
+import Header from './components/Header';
+import Countdown from './components/Countdown';
+import Participants from './components/Participants';
+import Footer from './components/Footer';
+import Head from 'next/head';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [countdownEnded, setCountdownEnded] = useState(false);
+  const { width, height } = useWindowSize();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleCountdownEnd = () => {
+    setCountdownEnded(true);
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Gabon Celebrity Showdown</title>
+        <meta name="description" content="Célébrez les célébrités gabonaises et votez pour vos favorites!" />
+      </Head>
+      <Header />
+
+
+      {!countdownEnded ? (
+        <Countdown onCountdownEnd={handleCountdownEnd} />
+      ) : (
+        <div className="text-center py-8">
+          <h2 className="text-3xl font-bold text-green-600 mb-4">Félicitations aux Gabon Celebrity Showdown</h2>
+          <h3 className="text-xl text-gray-800">Heureuse année 2025!</h3>
+          <Confetti width={width} height={height} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+      <Participants countdownEnded={countdownEnded} />
+      {/* Section d'Introduction */}
+      <section className="bg-gray-100 py-8 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="md:w-1/2">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Classement</h2>
+            <p className="text-gray-700 mb-2">Les votes détermineront le classement des célébrités :</p>
+            <ul className="list-none text-gray-600 space-y-2">
+              <li> 🏆 1er : GabonCelebrityShowdown de l&lsquo;année 2025</li>
+              <li> 🥈 2ème : Médaille d&apos;argent</li>
+              <li> 🥉 3ème : Médaille de bronze</li>
+            </ul>
+          </div>
+          <div className="md:w-1/2">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Annonce des Résultats</h2>
+            <p className="text-gray-700">Les résultats seront révélés le 7 janvier 2025</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Contexte */}
+      <section className="bg-white py-8 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="md:w-1/2">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Qu&apos;est-ce que Gabon Celebrity Showdown ?</h2>
+            <p className="text-gray-700">
+              Gabon Celebrity Showdown est une plateforme dédiée à la célébration des talents et figures publiques gabonaises. Votez pour vos célébrités préférées et vivez une expérience unique qui met en lumière celles qui inspirent notre nation. Les résultats seront annoncés lors d&apos;un événement festif, et à la fin, il n&apos;en restera que trois. Ce projet vise à renforcer l&apos;engagement du public et à valoriser la richesse culturelle du Gabon. Amusons Nous
+            </p>
+          </div>
+          <div className="md:w-1/4 flex justify-center">
+            <img
+              src="/logo-website.svg"
+              alt="Célébrités Gabonaises"
+              className="rounded-lg shadow-lg max-w-xs h-auto"
+            />
+          </div>
+
+        </div>
+      </section>
+      <Footer />
+    </>
   );
 }

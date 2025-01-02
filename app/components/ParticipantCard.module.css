@@ -1,0 +1,119 @@
+/* app/components/ParticipantCard.module.css */
+
+.card {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card:hover .imageWrapper img {
+  transform: scale(1.1);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+.image {
+  transition: transform 0.5s;
+}
+
+.shareOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.imageWrapper:hover .shareOverlay {
+  opacity: 1;
+}
+
+.shareIcon {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.shareButtons {
+  display: flex;
+  gap: 20px;
+}
+
+.whatsapp,
+.instagram {
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.whatsapp:hover {
+  color: #25D366;
+}
+
+.instagram:hover {
+  color: #E1306C;
+}
+
+.info {
+  padding: 20px;
+  text-align: center;
+}
+
+.name {
+  margin-bottom: 10px;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.votes {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.voteButton {
+  background-color: var(--secondary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  font-size: 1rem;
+}
+
+.voteButton:hover {
+  background-color: #ff5722;
+  transform: translateY(-3px);
+}
+
+.certificateIcon {
+  font-size: 1.2rem;
+}
