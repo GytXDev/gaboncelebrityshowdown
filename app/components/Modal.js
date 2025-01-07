@@ -40,40 +40,63 @@ export default function Modal({ participant, onClose, onVote }) {
    */
   const processPayment = async (phoneNumber, amount) => {
     try {
-      const response = await axios.post("/api/payment", { phoneNumber, amount });
-      console.log("API response:", response.data); // Log pour débogage
+      const response = await axios.post("https://gaboncelebrityshowdown.com/api/payment.php", {
+        phoneNumber,
+        amount,
+      }, {
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      console.log("API response:", response.data);
       return response.data;
     } catch (error) {
-      // Récupère le message d'erreur de l'API ou un message générique
       const errorMessage = error.response?.data?.status_message || "Erreur inconnue.";
-      console.log("API error:", errorMessage); // Log pour débogage
+      console.log("API error:", errorMessage);
       throw errorMessage;
     }
   };
+
 
   /**
    * Mappe le type de message à un message utilisateur et une sévérité.
    * @param {string} type - Le type de message.
    * @returns {object} L'objet contenant le message et la sévérité.
    */
+  /**
+  /**
+ * Mappe le type de message à un message utilisateur et une sévérité.
+ * @param {string} type - Le type de message.
+ * @returns {object} L'objet contenant le message et la sévérité.
+ */
   const mapResponseMessage = (type) => {
-    switch (type) {
-      case "Invalid PIN length":
-        return { message: "Le PIN fourni est invalide.", severity: "error" };
-      case "Solde insuffisant":
-        return { message: "Solde insuffisant pour la transaction.", severity: "error" };
-      case "Incorrect PIN":
-        return { message: "Le PIN est incorrect.", severity: "error" };
-      case "Transaction effectuée avec succès":
-        return { message: "Paiement réussi ! Votre vote est validé.", severity: "success" };
-      case "Transaction annulée avec succès":
-        return { message: "Transaction annulée.", severity: "info" };
-      case "Impossible d'obtenir le statut de la transaction après plusieurs tentatives":
-        return { message: "Impossible de vérifier le statut. Veuillez réessayer plus tard.", severity: "error" };
-      default:
-        return { message: "Une erreur est survenue.", severity: "error" };
+    const lowerType = type.toLowerCase();
+
+    if (lowerType.includes("invalid pin length")) {
+      return { message: "Le PIN fourni est invalide.", severity: "error" };
+    } else if (lowerType.includes("solde insuffisant")) {
+      return { message: "Solde insuffisant pour la transaction. Veuillez créditer votre compte.", severity: "error" };
+    } else if (lowerType.includes("incorrect pin")) {
+      return { message: "Le PIN est incorrect. Veuillez réessayer.", severity: "error" };
+    } else if (lowerType.includes("this is your last attempt")) {
+      return {
+        message: "Le PIN est incorrect. C'est votre dernière tentative, une nouvelle erreur verrouillera votre compte.",
+        severity: "error",
+      };
+    } else if (
+      lowerType.includes("transaction effectuée avec succès") ||
+      lowerType.includes("your transaction has been successfully processed")
+    ) {
+      return { message: "Paiement réussi ! Votre vote est validé.", severity: "success" };
+    } else if (lowerType.includes("transaction annulée avec succès")) {
+      return { message: "Transaction annulée.", severity: "info" };
+    } else if (lowerType.includes("impossible d'obtenir le statut de la transaction")) {
+      return { message: "Impossible de vérifier le statut. Veuillez réessayer plus tard.", severity: "error" };
+    } else {
+      return { message: "Une erreur est survenue.", severity: "error" };
     }
   };
+
+
+
 
   /**
    * Gère la soumission du formulaire de paiement.
